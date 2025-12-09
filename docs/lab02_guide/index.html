@@ -1,0 +1,1971 @@
+﻿<!doctype html> 
+<html lang="th">
+<head>
+    <!-- Form ID: 660a3274-5a4d-471b-bd3b-82f00f0805e2 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KKU Campus Guide - มหาวิทยาลัยขอนแก่น</title>
+
+    <!-- ฟอนต์ -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Leaflet CSS & JS (OpenStreetMap) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        :root {
+            --kku-blue: #a73b24;
+            --kku-orange: #ff6b6b;
+            --text-color: #1f2937;
+            --bg-light: #ffffff;
+            --bg-body: #f3f4f6;
+            --border-color: #e5e7eb;
+        }
+
+        *,*::before,*::after{box-sizing:border-box}
+        body{
+            margin:0;
+            background:var(--bg-body);
+            font-family: 'Kanit', system-ui, sans-serif; 
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .page{
+            display:grid;
+            grid-template-rows:auto 1fr auto;
+            min-height:100vh;
+        }
+
+        header{
+            background:var(--kku-blue); 
+            color:var(--bg-light);
+            padding:1rem 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .header-inner{ display:flex; flex-direction:column; align-items:center; gap:0.25rem; }
+
+        #logoCanvas {
+            width: 80px;
+            height: 80px;
+            display: block;
+            margin: 0 auto;
+        }
+        @media(min-width:700px){
+            #logoCanvas{ margin:0; }
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+            cursor: default;
+        }
+        .student-info{ font-size:0.9rem; color: rgba(255,255,255,0.9); }
+
+        main{
+            display:grid;
+            grid-template-columns: 1fr; 
+            grid-template-areas: 
+                "cards"
+                "map"
+                "contact";
+            gap:1.5rem; 
+            padding:1.5rem;
+        }
+
+        .cards-section {
+            grid-area: cards;
+        }
+
+        .cards{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+            gap:1.25rem;
+        }
+
+        .card{
+            background:var(--bg-light);
+            border:1px solid var(--border-color);
+            border-radius:.75rem; 
+            padding:0;
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-image-wrapper {
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+            position: relative;
+            background: #f8fafc;
+        }
+
+        .card-gallery {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: repeat(2, 1fr);
+            gap: 0.5rem;
+            padding: 0.5rem;
+            box-sizing: border-box;
+            align-items: stretch;
+        }
+
+        .card-gallery .img-wrap { position: relative; overflow: hidden; border-radius: 0.5rem; }
+        .card-gallery .img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.35s ease;
+        }
+        .card-gallery .img-wrap:hover img { transform: scale(1.04); }
+
+        .card-gallery .img-wrap .overlay {
+            position: absolute; left: 0; right: 0; bottom: 0;
+            padding: 8px 10px; color: #fff; font-size: 0.95rem;
+            background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%);
+            opacity: 0; transition: opacity 0.18s ease;
+        }
+        .card-gallery .img-wrap:hover .overlay { opacity: 1; }
+
+        .card-gallery .main { grid-row: 1 / span 2; grid-column: 1 / 2; }
+        .card-gallery .side { display: flex; flex-direction: column; gap: 0.5rem; }
+        .card-gallery .side .img-wrap { height: calc((100% - 0.5rem) / 2); }
+        .card-gallery .main .img-wrap { height: 100%; }
+
+        .card-gallery img { cursor: zoom-in; border: 1px solid var(--border-color); }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        .card:hover .card-image {
+            transform: scale(1.05); 
+        }
+
+        .card-image.loading {
+            background: linear-gradient(90deg, #753f3f 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .card-image.error {
+            background: var(--kku-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgb(254, 250, 250);
+            font-size: 2rem;
+        }
+
+        .card-content {
+            padding: 1.25rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card .meta {
+            margin-top: 0.5rem;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .card h4 {
+            margin: 0 0 0.75rem 0;
+            color: var(--kku-blue);
+            font-weight: 600;
+            font-size: 1.15rem;
+            line-height: 1.3;
+        }
+        
+        .card p {
+            font-size: 0.9rem;
+            color: #4b5563;
+            line-height: 1.5;
+            margin: 0 0 1rem 0;
+            flex: 1;
+        }
+        
+        .card small {
+            display: block;
+            margin-bottom: 0.75rem;
+            color: #6b7280;
+            font-weight: 400;
+            font-size: 0.85rem;
+            padding: 0.375rem 0.75rem;
+            background: #f3f4f6;
+            border-radius: 0.375rem;
+            border-left: 3px solid var(--kku-orange);
+        }
+
+        .card button{
+            margin-top: auto;
+            padding: 0.75rem 1rem;
+            background: var(--kku-orange); 
+            color: white;
+            border: 0;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .card button:hover{
+            background: #d97706;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+        }
+
+        /* Map Section */
+        .map-aside {
+            grid-area: map;
+        }
+
+        .map-aside h3 {
+            color: var(--kku-blue);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .map-controls {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .map-controls button {
+            padding: 0.5rem 1rem;
+            background: var(--kku-blue);
+            color: white;
+            border: 0;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: background 0.3s;
+        }
+
+        .map-controls button:hover {
+            background: #6f1b18;
+        }
+
+        .map-controls button.active {
+            background: var(--kku-orange);
+        }
+
+        /* Hide the canvas effect toggle when not needed */
+        #effectBtn { display: none !important; }
+
+        .map-info {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-left: auto;
+        }
+
+        #canvasContainer {
+            position: relative;
+            border-radius: .75rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 2px solid var(--kku-blue);
+            height: 500px;
+            background: #f8fafc;
+        }
+
+        #leafletMap {
+            width: 100%;
+            height: 100%;
+        }
+
+        #mapCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: .75rem;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .canvas-tooltip {
+            position: absolute;
+            background: rgba(0, 70, 139, 0.95);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            z-index: 1100;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .canvas-tooltip.show {
+            opacity: 1;
+        }
+
+        /* Leaflet popup style */
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            font-family: 'Kanit', sans-serif;
+        }
+        .custom-popup {
+            max-width: 250px;
+            font-family: 'Kanit', sans-serif;
+        }
+        .custom-popup img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .custom-popup h4 {
+            margin: 0 0 8px 0;
+            color: #a73b24;
+            font-size: 16px;
+        }
+        .custom-popup p {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .custom-popup small {
+            color: #6b7280;
+        }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .lightbox.show {
+            display: flex;
+        }
+
+        .lightbox .lb-inner {
+            max-width: 1100px;
+            width: 100%;
+            max-height: 90vh;
+            position: relative;
+        }
+
+        .lightbox img { 
+            width: 100%; 
+            height: auto; 
+            border-radius: 6px; 
+            display: block; 
+        }
+
+        .lightbox .lb-close {
+            position: absolute; 
+            top: -12px; 
+            right: -12px; 
+            background: #fff; 
+            border-radius: 50%;
+            width: 36px; 
+            height: 36px; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 20px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .lightbox .lb-caption { 
+            margin-top: 0.5rem; 
+            color: #fff; 
+            text-align: center; 
+        }
+
+        footer{
+            text-align:center;
+            padding:1rem;
+            color:#6b7280;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        /* Landing Page */
+        .landing-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #a73b24 0%, #8b3020 25%, #a73b24 50%, #7a281e 75%, #662019 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.8s ease-out, visibility 0.8s ease-out;
+            font-family: 'Kanit', system-ui, sans-serif;
+            overflow: hidden;
+        }
+
+        .landing-page.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .landing-content {
+            text-align: center;
+            color: white;
+            max-width: 600px;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        #landingLogoCanvas {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 2rem;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        .landing-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin: 0 0 1rem 0;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            line-height: 1.1;
+            background: linear-gradient(45deg, #ffffff, #fff9c4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5)); }
+            to { filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8)); }
+        }
+
+        .landing-subtitle {
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin: 0 0 2rem 0;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .landing-description {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 0 0 3rem 0;
+            color: rgba(255, 255, 255, 0.85);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .enter-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            color: white;
+            padding: 1rem 2.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(10px);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            font-family: inherit;
+        }
+
+        .enter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .enter-btn:hover::before {
+            left: 100%;
+        }
+
+        .enter-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .bg-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .floating-shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-shape:nth-child(1) {
+            width: 100px;
+            height: 100px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-shape:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            top: 20%;
+            right: 15%;
+            animation-delay: 1s;
+        }
+
+        .floating-shape:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            bottom: 15%;
+            left: 20%;
+            animation-delay: 2s;
+        }
+
+        .floating-shape:nth-child(4) {
+            width: 120px;
+            height: 120px;
+            bottom: 25%;
+            right: 10%;
+            animation-delay: 3s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) scale(1); opacity: 0.7; }
+            50% { transform: translateY(-20px) scale(1.1); opacity: 1; }
+        }
+
+        .particle {
+            position: absolute;
+            background: transparent;           /* ไม่ต้องใช้วงกลมพื้นหลังแล้ว */
+            pointer-events: none;
+            animation: particle-float 2.2s linear infinite; /* ลอยเร็วขึ้นด้วย */
+        }
+
+        /* ตัวจริงของฟอง/ดาว อยู่ใน ::before */
+        .particle::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.9);
+            clip-path: circle(50%);                     /* เริ่มเป็นวงกลม */
+            animation: particle-shape 2.2s linear infinite;
+        }
+
+        @keyframes particle-float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes particle-shape {
+            0%, 30% {
+                /* ช่วงแรกเป็นฟองกลม ๆ */
+                clip-path: circle(50%);
+            }
+            40%, 100% {
+                /* ลอยไปสักพักแล้วกลายเป็นดาว ⭐ */
+                clip-path: polygon(
+                    50% 0%,
+                    61% 35%,
+                    98% 35%,
+                    68% 57%,
+                    79% 91%,
+                    50% 70%,
+                    21% 91%,
+                    32% 57%,
+                    2% 35%,
+                    39% 35%
+                );
+            }
+        }
+
+        .university-info {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-light);
+            margin: auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            background: var(--kku-blue);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px 12px 0 0;
+            position: relative;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .close-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--kku-blue);
+            box-shadow: 0 0 0 3px rgba(155, 38, 34, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .icon-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .icon-option {
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.2rem;
+        }
+
+        .icon-option:hover {
+            border-color: var(--kku-orange);
+            transform: translateY(-1px);
+        }
+
+        .icon-option.selected {
+            border-color: var(--kku-blue);
+            background: rgba(155, 38, 34, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--kku-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #7a1f1c;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .add-place-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            background: var(--kku-orange);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-place-btn:hover {
+            transform: scale(1.1);
+            background: #a73b24;
+        }
+        
+        @media(max-width:768px){
+            header h1 { font-size: 1.5rem; }
+            main { padding: 1rem; gap: 1rem; }
+            .map-controls { justify-content: center; }
+            
+            .cards{
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .card-image-wrapper {
+                height: 160px;
+            }
+            
+            #canvasContainer {
+                height: 400px;
+            }
+
+            .card-gallery {
+                display: block;
+            }
+
+            .card-gallery .main { grid-row: auto; }
+            .card-gallery .side { display:flex; flex-direction:row; gap:0.5rem; }
+            .card-gallery .side .img-wrap { height: 120px; flex:1; }
+            .card-gallery img { height: 100%; }
+
+            #landingLogoCanvas {
+                width: 120px;
+                height: 120px;
+                margin-bottom: 1.5rem;
+            }
+            
+            .landing-title {
+                font-size: 2.5rem;
+            }
+            
+            .landing-subtitle {
+                font-size: 1.2rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .landing-description {
+                font-size: 1rem;
+                margin-bottom: 2rem;
+            }
+            
+            .enter-btn {
+                padding: 0.8rem 2rem;
+                font-size: 1rem;
+            }
+            
+            .landing-content {
+                padding: 1rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 1rem;
+            }
+            
+            .add-place-btn {
+                bottom: 1rem;
+                right: 1rem;
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .landing-title {
+                font-size: 2rem;
+            }
+            
+            .landing-subtitle {
+                font-size: 1rem;
+            }
+            
+            .floating-shape {
+                display: none;
+            }
+        }
+        .contact-section {
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.contact-section h3 {
+    color: var(--kku-blue);
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+@media(max-width: 768px) {
+    .contact-section {
+        padding: 1rem;
+    }
+}
+    </style>
+</head>
+<body>
+
+<!-- Landing Page -->
+<div id="landingPage" class="landing-page">
+    <div class="bg-animation">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+    
+    <div class="landing-content">
+        <canvas id="landingLogoCanvas" aria-label="โลโก้มหาวิทยาลัยขอนแก่น"></canvas>
+        
+        <h1 class="landing-title">KKU Campus Guide</h1>
+        
+        <p class="landing-description">
+            สำรวจสถานที่สำคัญต่าง ๆ ภายในมหาวิทยาลัยขอนแก่น<br>
+            ด้วยแผนที่แบบโต้ตอบที่ทันสมัยและใช้งานง่าย
+        </p>
+        
+        <button class="enter-btn" onclick="enterMainSite()">
+            🚀 เริ่มสำรวจ
+        </button>
+    </div>
+    
+    <div class="university-info">
+        <div>มหาวิทยาลัยขอนแก่น | Khon Kaen University</div>
+        <div>รหัสนักศึกษา: 663380408-1 | สุจิรา พลอาษา</div>
+    </div>
+</div>
+
+<div class="page">
+
+<header>
+    <div class="header-inner">
+        <canvas id="logoCanvas" aria-hidden="true"></canvas>
+        <h1>KKU Campus Guide</h1>
+        <div class="student-info">
+            รหัสนักศึกษา: <strong>663380408-1</strong> &nbsp;|&nbsp; 
+            ชื่อ-สกุล: <strong>สุจิรา พลอาษา</strong>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="cards-section">
+        <h2>📍 สถานที่สำคัญ</h2>
+        <div id="cards" class="cards"></div>
+    </section>
+    
+
+    <aside class="map-aside">
+        <h3>🗺️ แผนที่ </h3>
+        
+        <div class="map-controls">
+            <button onclick="resetMapView()" title="รีเซ็ตมุมมอง">📍 ดูทั้งหมด</button>
+            <button onclick="toggleMapLayer()" id="layerBtn">🗺️ แผนที่</button>
+            <button onclick="toggleCanvasEffects()" id="effectBtn">✨ เอฟเฟกต์</button>
+            <div class="map-info">
+                🔍 Zoom: <span id="zoomLevel">-</span> | 
+                📐 จุด: <span id="pointCount">4</span>
+            </div>
+        </div>
+
+        <div id="canvasContainer">
+            <div id="leafletMap"></div>
+            <canvas id="mapCanvas"></canvas>
+            <div id="tooltip" class="canvas-tooltip"></div>
+        </div>
+    </aside>
+
+    <section class="contact-section">
+        <h3>📞 ติดต่อเรา</h3>
+        <form action="https://api.web3forms.com/submit" method="POST" class="contact-form">
+            <input type="hidden" name="access_key" value="660a3274-5a4d-471b-bd3b-82f00f0805e2">
+            
+            <div class="form-group">
+                <label for="contact-name">ชื่อ-สกุล *</label>
+                <input type="text" id="contact-name" name="name" required placeholder="กรุณาใส่ชื่อ-สกุล">
+            </div>
+            
+            <div class="form-group">
+                <label for="contact-email">อีเมล *</label>
+                <input type="email" id="contact-email" name="email" required placeholder="example@kku.ac.th">
+            </div>
+            
+            <div class="form-group">
+                <label for="contact-message">ข้อความ *</label>
+                <textarea id="contact-message" name="message" required placeholder="ข้อเสนอแนะหรือคำถามเกี่ยวกับแผนที่"></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">📤 ส่งข้อความ</button>
+        </form>
+    </section>
+
+</main>
+
+<footer>
+    <p>© 2024 Khon Kaen University</p>
+    <p style="font-size:0.75rem;color:#9ca3af;">
+       
+    </p>
+</footer>
+
+</div>
+
+<!-- Add Place Button -->
+<button class="add-place-btn" onclick="openAddPlaceModal()" title="เพิ่มสถานที่ใหม่">
+    ➕
+</button>
+
+<!-- Add Place Modal -->
+<div id="addPlaceModal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📍 เพิ่มสถานที่ใหม่</h3>
+            <button class="close-btn" onclick="closeAddPlaceModal()" aria-label="ปิด">×</button>
+        </div>
+        <div class="modal-body">
+            <form id="addPlaceForm">
+                <div class="form-group">
+                    <label for="placeName">ชื่อสถานที่ *</label>
+                    <input type="text" id="placeName" required placeholder="เช่น หอสมุดกลาง">
+                </div>
+                
+                <div class="form-group">
+                    <label for="placeFaculty">คณะ/หน่วยงาน *</label>
+                    <input type="text" id="placeFaculty" required placeholder="เช่น สำนักวิทยบริการและเทคโนโลยีสารสนเทศ">
+                </div>
+                
+                <div class="form-group">
+                    <label for="placeType">ประเภท *</label>
+                    <select id="placeType" required>
+                        <option value="">เลือกประเภท</option>
+                        <option value="academic">หน่วยงานวิชาการ</option>
+                        <option value="facility">สิ่งอำนวยความสะดวก</option>
+                        <option value="service">บริการ</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="placeDesc">รายละเอียด *</label>
+                    <textarea id="placeDesc" required placeholder="อธิบายเกี่ยวกับสถานที่นี้"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>ไอคอน *</label>
+                    <div class="icon-selector" id="iconSelector">
+                        <div class="icon-option" data-icon="🏛️">🏛️</div>
+                        <div class="icon-option" data-icon="📚">📚</div>
+                        <div class="icon-option" data-icon="🍽️">🍽️</div>
+                        <div class="icon-option" data-icon="🏥">🏥</div>
+                        <div class="icon-option" data-icon="🎓">🎓</div>
+                        <div class="icon-option" data-icon="💻">💻</div>
+                        <div class="icon-option" data-icon="⚽">⚽</div>
+                        <div class="icon-option" data-icon="🎨">🎨</div>
+                        <div class="icon-option" data-icon="🔬">🔬</div>
+                        <div class="icon-option" data-icon="🏪">🏪</div>
+                        <div class="icon-option" data-icon="🚗">🚗</div>
+                        <div class="icon-option" data-icon="🌳">🌳</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="placeLat">ละติจูด (Latitude) *</label>
+                    <input type="number" id="placeLat" step="0.000001" required placeholder="16.4417">
+                </div>
+                
+                <div class="form-group">
+                    <label for="placeLng">ลองจิจูด (Longitude) *</label>
+                    <input type="number" id="placeLng" step="0.000001" required placeholder="102.8315">
+                </div>
+                
+                <div class="form-group">
+                    <label for="placeImages">URL รูปภาพ (คั่นด้วยเครื่องหมายจุลภาค)</label>
+                    <textarea id="placeImages" placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddPlaceModal()">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary">เพิ่มสถานที่</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox" aria-hidden="true">
+    <div class="lb-inner" role="dialog" aria-modal="true">
+        <button class="lb-close" aria-label="ปิด">×</button>
+        <img id="lb-img" alt="" />
+        <div class="lb-caption" id="lb-caption"></div>
+    </div>
+</div>
+
+<script>
+// ===============================
+// 1) Data  (ใช้รูปจริงจากโค้ดก่อนหน้า)
+// ===============================
+const rawPlaces = [
+    {
+        id: 1,
+        name: "วิทยาลัยการคอมพิวเตอร์",
+        faculty: "Computer Science / IT",
+        type: "academic",
+        desc: "ศูนย์กลางด้านเทคโนโลยีของ มข. ที่มีการเรียนการสอนด้านคอมพิวเตอร์และเทคโนโลยีสารสนเทศที่ทันสมัย",
+        lat: 16.4417, lng: 102.8315,
+        images: [
+            "https://www.edunewssiam.com/uploads/images-cache/12283/article/f811b0d980a36b21eb7950ef8ee70dc5_full.jpg",
+            "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSzLZaabU236FrAiGesQ9vC9JFROrusbTm-qwW401Hm7JMOec5cVRB8LLx2ea6TsqMyQynBTi22gTm1WU2X7gXwPZ5DuGUmt15h02PlP-O-wK0nSb4pl3zn18pheEI6gsPQBTYnZXR348uWP=s1360-w1360-h1020-rw",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwNHR6APjYmJIzj8w87eHZZIK6jPGQlM4IFg&s"
+        ],
+        icon: "💻"
+    },
+    {
+        id: 2,
+        name: "ศูนย์ประชุมอเนกประสงค์กาญจนาภิเษก",
+        faculty: "Golden Jubilee Convention Hall",
+        type: "facility",
+        desc: "ศูนย์การประชุมที่ใหญ่ รองรับการประชุม/งานแสดงสินค้าและกิจกรรมมหาวิทยาลัย",
+        lat: 16.4408, lng: 102.8342,
+        images: [
+            "https://asset.kku.ac.th/wp-content/uploads/2025/02/2025-02-04_08-51-31_488661.png",
+            "https://kkdata.khonkaenlink.info/wp-content/uploads/2022/07/17_big.jpg",
+            "https://us-fbcloud.net/picpost/data/109/109487-qgmsyb-10.n.jpg"
+        ],
+        icon: "🏛️"
+    },
+    {
+        id: 3,
+        name: "KKU Complex",
+        faculty: "Food and Services Center 1",
+        type: "service",
+        desc: "ศูนย์อาหารและบริการ จุดรวมร้านอาหารหลากหลายรูปแบบ",
+        lat: 16.4389, lng: 102.8290,
+        images: [
+            "https://scontent-bkk1-1.xx.fbcdn.net/v/t39.30808-6/492552145_1247140874082263_5688624539114735543_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=127cfc&_nc_ohc=Di8qdxWFWzwQ7kNvwHpKez6&_nc_oc=AdmP-D5N5xTLY3bQ7Ds7plv6HeFgDzkI_-x9gq6ANmACU9nCbtKWxqZE02q1voBb994&_nc_zt=23&_nc_ht=scontent-bkk1-1.xx&_nc_gid=Ci6cD-kKFcpibYYSQ8Vm4g&oh=00_AflSoHwXVTfU6j3782LgokujKbSmeB7BYSypb8R8bahVyw&oe=693B5F92",
+            "https://asset.kku.ac.th/wp-content/uploads/2022/04/Cozy-1024x768.jpg",
+            "https://asset.kku.ac.th/wp-content/uploads/2022/04/%E0%B8%99%E0%B9%89%E0%B8%B3%E0%B8%AB%E0%B8%A7%E0%B8%B2%E0%B8%99%E0%B8%AA%E0%B8%94%E0%B8%8A%E0%B8%B7%E0%B9%88%E0%B8%99-15-%E0%B8%9A%E0%B8%B2%E0%B8%97%E0%B8%A1%E0%B8%B5%E0%B8%97%E0%B8%B5%E0%B9%88%E0%B8%84%E0%B8%AD%E0%B8%A1%E0%B9%80%E0%B8%9E%E0%B8%A5%E0%B9%87%E0%B8%81%E0%B8%8B%E0%B9%8C-1024x768.jpg"
+        ],
+        icon: "🍽️"
+    },
+    {
+        id: 4,
+        name: "คณะศึกษาศาสตร์",
+        faculty: "Education Faculty",
+        type: "academic",
+        desc: "คณะด้านวิชาชีพครู ผลิตบุคลากรทางการศึกษาที่มีคุณภาพ เพื่อพัฒนาการศึกษาของประเทศ",
+        lat: 16.4365, lng: 102.8321,
+        images: [
+            "https://ednet.kku.ac.th/site/wp-content/uploads/2024/04/ED0-1-of-29.jpg",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_kuJwzSwdfy-NXpKuBQFEEruu5njCWDnepA&s",
+            "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSxzAv544cIuWkovUthHg-BfJurA5gEJ-3a9QCpTsIcYdwegYxKz373dfylNs2URpo9-I54cIkfmLzisKnuGvEa91_tYjuIzzET-NIOxJIeFiDHFHRPqPPDyvERfhlVLPiEMJUw=s1360-w1360-h1020-rw"
+        ],
+        icon: "🎓"
+    }
+];
+
+// ===============================
+// 2) Globals
+// ===============================
+let map;
+let markers = [];
+let canvas, ctx;
+let currentLayerIndex = 0;
+let canvasEffectsEnabled = true;
+
+const mapLayers = {
+    'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }),
+    'Satellite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '© Esri'
+    }),
+    'Terrain': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenTopoMap'
+    })
+};
+const layerNames = Object.keys(mapLayers);
+
+// Landing & logos
+let landingLogoCanvas, landingLogoCtx;
+let headerLogoCanvas, headerLogoCtx;
+let headerLogoAnim = 0;
+
+// modal/form
+let selectedIcon = '';
+let nextPlaceId = 5;
+let mapInitialized = false;
+let formInitialized = false;
+let headerLogoInitialized = false;
+let particlesCreated = false;
+
+// ===============================
+// Util
+// ===============================
+function createFallbackImage(place) {
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+        <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#F7931E;stop-opacity:0.8" />
+                    <stop offset="100%" style="stop-color:#a73b24;stop-opacity:0.8" />
+                </linearGradient>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#bg)"/>
+            <text x="50%" y="40%" font-family="Kanit, Arial, sans-serif" font-size="24" font-weight="bold" fill="white" text-anchor="middle">${place.icon}</text>
+            <text x="50%" y="60%" font-family="Kanit, Arial, sans-serif" font-size="16" fill="white" text-anchor="middle">${place.name}</text>
+            <text x="50%" y="75%" font-family="Kanit, Arial, sans-serif" font-size="12" fill="rgba(255,255,255,0.8)" text-anchor="middle">${place.faculty}</text>
+        </svg>
+    `)}`;
+}
+
+function updatePointCountUI() {
+    const el = document.getElementById('pointCount');
+    if (el) el.textContent = rawPlaces.length.toString();
+}
+
+function updateZoomUI() {
+    const el = document.getElementById('zoomLevel');
+    if (el && map) {
+        el.textContent = map.getZoom().toString();
+    }
+}
+
+// ===============================
+// 3) Landing Page
+// ===============================
+function initLandingPage() {
+    const page = document.querySelector('.page');
+    if (page) page.style.display = 'none';
+
+    initLandingLogo();
+    createParticles();
+}
+
+function initLandingLogo() {
+    landingLogoCanvas = document.getElementById('landingLogoCanvas');
+    if (!landingLogoCanvas) return;
+
+    landingLogoCtx = landingLogoCanvas.getContext('2d');
+    resizeLandingLogo();
+    window.addEventListener('resize', resizeLandingLogo);
+    requestAnimationFrame(animateLandingLogo);
+}
+
+function resizeLandingLogo() {
+    if (!landingLogoCanvas || !landingLogoCtx) return;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = landingLogoCanvas.getBoundingClientRect();
+    const w = rect.width || 160;
+    const h = rect.height || 160;
+    landingLogoCanvas.width = Math.round(w * dpr);
+    landingLogoCanvas.height = Math.round(h * dpr);
+    landingLogoCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function animateLandingLogo(time) {
+    if (!landingLogoCtx || !landingLogoCanvas) return;
+    const t = time || performance.now();
+    drawAnimatedLogo(landingLogoCtx, landingLogoCanvas, t);
+    requestAnimationFrame(animateLandingLogo);
+}
+
+function createParticles() {
+    if (particlesCreated) return;
+    const landing = document.getElementById('landingPage');
+    if (!landing) return;
+    particlesCreated = true;
+
+    const count = 35;
+    for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = 2 + Math.random() * 4;
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDuration = (1.6 + Math.random() * 1.4) + 's'; /* ~1.6s - 3.0s */
+        p.style.animationDelay = (Math.random() * 2) + 's';
+        landing.appendChild(p);
+    }
+}
+
+// ===============================
+// 4) Header Logo
+// ===============================
+function initHeaderLogo() {
+    headerLogoCanvas = document.getElementById('logoCanvas');
+    if (!headerLogoCanvas) return;
+
+    headerLogoCtx = headerLogoCanvas.getContext('2d');
+    resizeHeaderLogo();
+    window.addEventListener('resize', resizeHeaderLogo);
+    requestAnimationFrame(animateHeaderLogo);
+}
+
+function resizeHeaderLogo() {
+    if (!headerLogoCanvas || !headerLogoCtx) return;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = headerLogoCanvas.getBoundingClientRect();
+    const w = rect.width || 80;
+    const h = rect.height || 80;
+    headerLogoCanvas.width = w * dpr;
+    headerLogoCanvas.height = h * dpr;
+    headerLogoCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function animateHeaderLogo(time) {
+    if (!headerLogoCtx || !headerLogoCanvas) return;
+    const t = time || performance.now();
+    drawAnimatedLogo(headerLogoCtx, headerLogoCanvas, t, { small: true });
+    requestAnimationFrame(animateHeaderLogo);
+}
+
+/**
+ * Shared animated logo renderer for landing & header
+ * ctx: CanvasRenderingContext2D
+ * canvas: HTMLCanvasElement
+ * t: timestamp in ms
+ * opts: { small: boolean }
+ */
+function drawAnimatedLogo(ctx, canvas, t, opts = {}) {
+    const rect = canvas.getBoundingClientRect();
+    const w = rect.width || canvas.width || 100;
+    const h = rect.height || canvas.height || 100;
+    const cx = w / 2, cy = h / 2;
+    const time = (t % 4000) / 1000; // seconds loop
+
+    ctx.clearRect(0, 0, w, h);
+
+    // subtle radial glow
+    const grd = ctx.createRadialGradient(cx, cy, 4, cx, cy, Math.min(w, h) / 2);
+    grd.addColorStop(0, 'rgba(255,255,255,0.12)');
+    grd.addColorStop(1, 'rgba(167,59,36,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.arc(cx, cy, Math.min(w, h) / 3.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // rotating ring
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(time * Math.PI * 2 * 0.15);
+    ctx.lineWidth = Math.max(2, Math.min(w, h) * 0.06);
+    ctx.strokeStyle = `rgba(167,59,36,${0.6 + 0.15 * Math.sin(time * 6)})`;
+    ctx.beginPath();
+    ctx.arc(0, 0, Math.min(w, h) / 4, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    // inner pulsing circle
+    const pulse = 1 + 0.06 * Math.sin(time * Math.PI * 2 * 1.5);
+    ctx.beginPath();
+    ctx.arc(cx, cy, (Math.min(w, h) / 6) * pulse, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.fill();
+
+    // KKU text: use CSS var --kku-blue but slightly darker for contrast
+    const rawCssColor = getComputedStyle(document.documentElement).getPropertyValue('--kku-blue') || '#ffffff';
+    const cssColor = (rawCssColor || '#ffffff').trim() || '#ffffff';
+
+    // helper: darken hex color by percent (0-100)
+    function darkenHex(hex, percent) {
+        let h = String(hex).replace('#', '');
+        if (h.length === 3) h = h.split('').map(c => c + c).join('');
+        const num = parseInt(h, 16);
+        let r = (num >> 16) & 255;
+        let g = (num >> 8) & 255;
+        let b = num & 255;
+        const factor = 1 - (percent / 100);
+        r = Math.max(0, Math.min(255, Math.round(r * factor)));
+        g = Math.max(0, Math.min(255, Math.round(g * factor)));
+        b = Math.max(0, Math.min(255, Math.round(b * factor)));
+        return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+
+    const logoColor = darkenHex(cssColor, 18); // darken ~18%
+    ctx.fillStyle = logoColor;
+
+    // Add layered strokes and shadows so text stands out from any background
+    const outlineWarm = '#fff9e6'; // warm light outline
+    const fontSize = opts.small ? Math.floor(Math.min(w, h) * 0.18) : Math.floor(Math.min(w, h) * 0.18);
+    ctx.font = `bold ${fontSize}px Kanit, system-ui, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // 1) thin dark stroke for separation
+    ctx.shadowColor = 'rgba(0,0,0,0.45)';
+    ctx.shadowBlur = Math.max(1, Math.round(fontSize * 0.12));
+    ctx.lineWidth = Math.max(1, Math.round(fontSize * 0.08));
+    ctx.strokeStyle = '#000000';
+    ctx.strokeText('KKU', cx, cy + (opts.small ? 0 : 2));
+
+    // 2) warm outer stroke with light glow
+    ctx.shadowColor = 'rgba(255,255,255,0.45)';
+    ctx.shadowBlur = Math.max(3, Math.round(fontSize * 0.22));
+    ctx.lineWidth = Math.max(2, Math.round(fontSize * 0.12));
+    ctx.strokeStyle = outlineWarm;
+    ctx.strokeText('KKU', cx, cy + (opts.small ? 0 : 2));
+
+    // 3) fill text with the darker site color, keep a subtle inner shadow for depth
+    ctx.shadowColor = 'rgba(0,0,0,0.18)';
+    ctx.shadowBlur = Math.max(1, Math.round(fontSize * 0.08));
+    ctx.fillText('KKU', cx, cy + (opts.small ? 0 : 2));
+
+    // reset shadow so it doesn't affect other drawings
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+}
+
+// ===============================
+// 5) Cards + Lightbox
+// ===============================
+function renderCards() {
+    const cardBox = document.getElementById('cards');
+    if (!cardBox) return;
+    cardBox.innerHTML = '';
+
+    for (const place of rawPlaces) {
+        const article = document.createElement('article');
+        article.className = 'card';
+
+        const gallery = document.createElement('div');
+        gallery.className = 'card-gallery';
+
+        const imgs = (place.images && place.images.length) ? place.images.slice(0, 3) : [];
+        const main = document.createElement('div');
+        main.className = 'img-wrap main';
+        const mainImg = document.createElement('img');
+        mainImg.src = imgs[0] || createFallbackImage(place);
+        mainImg.alt = place.name;
+        mainImg.loading = 'lazy';
+        mainImg.onerror = () => { mainImg.src = createFallbackImage(place); };
+        mainImg.addEventListener('click', () => openLightbox(place, 0));
+        main.appendChild(mainImg);
+        gallery.appendChild(main);
+
+        const side = document.createElement('div');
+        side.className = 'side';
+        for (let i = 1; i <= 2; i++) {
+            const wrap = document.createElement('div'); wrap.className = 'img-wrap';
+            const img = document.createElement('img');
+            img.loading = 'lazy';
+            img.alt = place.name + ' image';
+            img.src = imgs[i] || createFallbackImage(place);
+            img.onerror = () => { img.src = createFallbackImage(place); };
+            img.addEventListener('click', () => openLightbox(place, i));
+            wrap.appendChild(img);
+            side.appendChild(wrap);
+        }
+        gallery.appendChild(side);
+
+        const content = document.createElement('div');
+        content.className = 'card-content';
+        content.innerHTML = `
+            <h4>${place.icon} ${place.name}</h4>
+            <p>${place.desc}</p>
+            <small>🏢 ${place.faculty}</small>
+            <button type="button" data-id="${place.id}">แสดงบนแผนที่</button>
+        `;
+
+        article.appendChild(gallery);
+        article.appendChild(content);
+        cardBox.appendChild(article);
+    }
+
+    document.querySelectorAll('.card button[data-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = Number(btn.dataset.id);
+            highlightOnMap(id);
+        });
+    });
+
+    updatePointCountUI();
+}
+
+function openLightbox(place, index) {
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lb-img');
+    const lbCaption = document.getElementById('lb-caption');
+    if (!lb || !lbImg) return;
+
+    const src = (place.images && place.images[index]) ? place.images[index] : createFallbackImage(place);
+    lbImg.src = src;
+    lbImg.alt = place.name;
+    lbCaption.textContent = `${place.icon} ${place.name} — ${place.faculty}`;
+    lb.classList.add('show');
+    lb.setAttribute('aria-hidden', 'false');
+}
+
+function closeLightbox() {
+    const lb = document.getElementById('lightbox');
+    if (!lb) return;
+    lb.classList.remove('show');
+    lb.setAttribute('aria-hidden', 'true');
+    const lbImg = document.getElementById('lb-img');
+    if (lbImg) lbImg.src = '';
+}
+
+// ===============================
+// 6) Leaflet + Canvas Overlay
+// ===============================
+
+// Custom Icon
+const customIcon = L.divIcon({
+    html: `
+        <div style="
+            width: 32px;
+            height: 40px;
+            background: url('data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 32 40">
+                    <path d="M16 0C7.2 0 0 7.2 0 16c0 16 16 24 16 24s16-8 16-24C32 7.2 24.8 0 16 0z" fill="#F7931E"/>
+                    <circle cx="16" cy="16" r="6" fill="#00468B"/>
+                    <circle cx="16" cy="16" r="3" fill="white"/>
+                </svg>
+            `)}') no-repeat center center;
+            background-size: contain;
+        "></div>
+    `,
+    className: 'custom-div-icon',
+    iconSize: [32, 40],
+    iconAnchor: [16, 40],
+    popupAnchor: [0, -40]
+});
+
+function initLeafletMap() {
+    const center = [16.4417, 102.8315];
+    map = L.map('leafletMap').setView(center, 16);
+    mapLayers[layerNames[0]].addTo(map);
+
+    addMarkersToMap();
+    initCanvasOverlay();
+
+    map.on('moveend zoomend', () => {
+        if (ctx && canvas) {
+            ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+        }
+        updateZoomUI();
+    });
+
+    updateZoomUI();
+    updatePointCountUI();
+}
+
+function addMarkersToMap() {
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+
+    rawPlaces.forEach(place => {
+        addMarkerForPlace(place);
+    });
+}
+
+function addMarkerForPlace(place) {
+    const marker = L.marker([place.lat, place.lng], {
+        icon: customIcon,
+        title: place.name
+    }).addTo(map);
+
+    const popupContent = `
+        <div class="custom-popup">
+            <img src="${(place.images && place.images[0]) || createFallbackImage(place)}" alt="${place.name}" onerror="this.style.display='none'">
+            <h4>${place.name}</h4>
+            <p>${place.desc}</p>
+            <small>🏢 ${place.faculty}</small>
+        </div>
+    `;
+
+    marker.bindPopup(popupContent, {
+        maxWidth: 300,
+        className: 'custom-leaflet-popup'
+    });
+
+    marker.on('click', () => {
+        if (canvasEffectsEnabled) {
+            setTimeout(() => {
+                highlightOnCanvas(place.id);
+            }, 100);
+        }
+    });
+
+    marker.on('mouseover', () => {
+        if (canvasEffectsEnabled) {
+            drawHoverEffect(place);
+        }
+    });
+
+    marker.on('mouseout', () => {
+        if (ctx && canvas) {
+            ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+        }
+    });
+
+    marker.placeData = place;
+    markers.push(marker);
+}
+
+function initCanvasOverlay() {
+    canvas = document.getElementById("mapCanvas");
+    ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+}
+
+function latLngToCanvasPixel(lat, lng) {
+    const point = map.latLngToContainerPoint([lat, lng]);
+    return { x: point.x, y: point.y };
+}
+
+// pulse highlight
+function highlightOnCanvas(placeId) {
+    if (!canvasEffectsEnabled) return;
+    const place = rawPlaces.find(p => p.id === placeId);
+    if (!place || !ctx || !canvas) return;
+
+    let pulse = 0;
+    const maxPulse = 40;
+
+    const animate = () => {
+        ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+        const pixel = latLngToCanvasPixel(place.lat, place.lng);
+
+        if (pixel && pixel.x >= 0 && pixel.x <= canvas.offsetWidth && 
+            pixel.y >= 0 && pixel.y <= canvas.offsetHeight) {
+
+            for (let i = 0; i < 3; i++) {
+                const radius = 15 + (pulse * 1.5) + (i * 10);
+                const opacity = (1 - (pulse / maxPulse)) * (0.8 - i * 0.2);
+                
+                ctx.beginPath();
+                ctx.arc(pixel.x, pixel.y, radius, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(247, 147, 30, ${opacity})`;
+                ctx.lineWidth = 3 - i;
+                ctx.stroke();
+            }
+            
+            ctx.beginPath();
+            ctx.arc(pixel.x, pixel.y, 8, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(217, 119, 6, ${1 - (pulse / maxPulse * 0.5)})`;
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(pixel.x, pixel.y, 8, 0, Math.PI * 2);
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        pulse++;
+        if (pulse < maxPulse) {
+            requestAnimationFrame(animate);
+        }
+    };
+
+    animate();
+}
+
+function drawHoverEffect(place) {
+    if (!canvasEffectsEnabled || !ctx || !canvas) return;
+    
+    const pixel = latLngToCanvasPixel(place.lat, place.lng);
+    ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+    
+    if (pixel && pixel.x >= 0 && pixel.x <= canvas.offsetWidth && 
+        pixel.y >= 0 && pixel.y <= canvas.offsetHeight) {
+        
+        ctx.beginPath();
+        ctx.arc(pixel.x, pixel.y, 25, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0, 70, 139, 0.6)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        const text = place.name;
+        ctx.font = 'bold 14px Kanit, sans-serif';
+        const textWidth = ctx.measureText(text).width;
+        const padding = 8;
+        
+        ctx.fillStyle = 'rgba(0, 70, 139, 0.9)';
+        ctx.fillRect(pixel.x - textWidth/2 - padding, pixel.y - 45, textWidth + padding*2, 25);
+        
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'center';
+        ctx.fillText(text, pixel.x, pixel.y - 27);
+        ctx.textAlign = 'start';
+    }
+}
+
+// จาก card -> zoom map
+function highlightOnMap(id) {
+    if (!map) return;
+    const place = rawPlaces.find(p => p.id === id);
+    if (!place) return;
+
+    map.closePopup();
+    map.setView([place.lat, place.lng], 18);
+
+    const marker = markers.find(m => m.placeData.id === id);
+    if (marker) {
+        setTimeout(() => {
+            marker.openPopup();
+        }, 400);
+    }
+
+    if (canvasEffectsEnabled) {
+        setTimeout(() => {
+            highlightOnCanvas(id);
+        }, 800);
+    }
+}
+
+// ===============================
+// 7) Map Control Buttons
+// ===============================
+function resetMapView() {
+    if (!map || markers.length === 0) return;
+    const group = new L.featureGroup(markers);
+    map.fitBounds(group.getBounds().pad(0.1));
+    map.closePopup();
+    if (ctx && canvas) {
+        ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+    }
+    updateZoomUI();
+}
+
+function toggleMapLayer() {
+    if (!map) return;
+
+    map.eachLayer(layer => {
+        if (layer instanceof L.TileLayer) {
+            map.removeLayer(layer);
+        }
+    });
+
+    currentLayerIndex = (currentLayerIndex + 1) % layerNames.length;
+    const newLayerName = layerNames[currentLayerIndex];
+    mapLayers[newLayerName].addTo(map);
+
+    const btn = document.getElementById('layerBtn');
+    if (btn) {
+        btn.textContent = `🗺️ ${newLayerName}`;
+    }
+}
+
+function toggleCanvasEffects() {
+    canvasEffectsEnabled = !canvasEffectsEnabled;
+    if (!canvasEffectsEnabled && ctx && canvas) {
+        ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+    }
+
+    const btn = document.getElementById('effectBtn');
+    if (btn) {
+        btn.textContent = canvasEffectsEnabled ? '✨ เอฟเฟกต์' : '💤 เอฟเฟกต์ (ปิด)';
+    }
+}
+
+// ===============================
+// 8) Modal / Form
+// ===============================
+function openAddPlaceModal() {
+    const modal = document.getElementById('addPlaceModal');
+    if (!modal) return;
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeAddPlaceModal() {
+    const modal = document.getElementById('addPlaceModal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+function initForm() {
+    const iconSelector = document.getElementById('iconSelector');
+    const form = document.getElementById('addPlaceForm');
+
+    if (iconSelector) {
+        iconSelector.querySelectorAll('.icon-option').forEach(option => {
+            option.addEventListener('click', () => {
+                iconSelector.querySelectorAll('.icon-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedIcon = option.dataset.icon || '';
+            });
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            const name = document.getElementById('placeName').value.trim();
+            const faculty = document.getElementById('placeFaculty').value.trim();
+            const type = document.getElementById('placeType').value;
+            const desc = document.getElementById('placeDesc').value.trim();
+            const lat = parseFloat(document.getElementById('placeLat').value);
+            const lng = parseFloat(document.getElementById('placeLng').value);
+            const imgsText = document.getElementById('placeImages').value.trim();
+            const imgArr = imgsText ? imgsText.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+            if (!name || !faculty || !type || !desc || Number.isNaN(lat) || Number.isNaN(lng)) {
+                alert('กรุณากรอกข้อมูลให้ครบ');
+                return;
+            }
+            if (!selectedIcon) {
+                alert('กรุณาเลือกไอคอนสำหรับสถานที่');
+                return;
+            }
+
+            const newPlace = {
+                id: nextPlaceId++,
+                name, faculty, type, desc, lat, lng,
+                images: imgArr,
+                icon: selectedIcon
+            };
+            rawPlaces.push(newPlace);
+            renderCards();
+            if (map) {
+                addMarkerForPlace(newPlace);
+                updatePointCountUI();
+            }
+
+            closeAddPlaceModal();
+            form.reset();
+            selectedIcon = '';
+            if (iconSelector) {
+                iconSelector.querySelectorAll('.icon-option').forEach(o => o.classList.remove('selected'));
+            }
+        });
+    }
+}
+
+// ===============================
+// 9) เข้าหน้า main จาก Landing
+// ===============================
+function enterMainSite() {
+    const landing = document.getElementById('landingPage');
+    const page = document.querySelector('.page');
+    if (landing) landing.style.display = 'none';
+    if (page) page.style.display = '';
+
+    renderCards();
+
+    if (!mapInitialized) {
+        initLeafletMap();
+        mapInitialized = true;
+    }
+    if (!formInitialized) {
+        initForm();
+        formInitialized = true;
+    }
+    if (!headerLogoInitialized) {
+        initHeaderLogo();
+        headerLogoInitialized = true;
+    }
+}
+
+// ===============================
+// 10) Global events
+// ===============================
+document.addEventListener('click', (e) => {
+    const lb = document.getElementById('lightbox');
+    if (lb) {
+        if (e.target.matches('.lb-close')) closeLightbox();
+        if (e.target === lb) closeLightbox();
+    }
+
+    const modal = document.getElementById('addPlaceModal');
+    if (modal && e.target === modal) {
+        closeAddPlaceModal();
+    }
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeLightbox();
+        closeAddPlaceModal();
+    }
+});
+
+window.addEventListener('load', initLandingPage);
+</script>
+
+</body>
+</html>

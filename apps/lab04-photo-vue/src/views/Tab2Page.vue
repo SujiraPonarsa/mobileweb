@@ -35,17 +35,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'; // ต้อง import onMounted
+import { onMounted } from 'vue'; 
 import { 
   IonPage, IonHeader, IonFab, IonFabButton, 
   IonIcon, IonToolbar, IonTitle, IonContent,
-  // import สำหรับ Grid
+  
   IonGrid, IonRow, IonCol, IonImg 
 } from '@ionic/vue';
 import { camera } from 'ionicons/icons';
 import { usePhotoGallery } from '@/composables/usePhotoGallery';
 
-// ดึง photos, addNewToGallery และ loadSaved ออกมาใช้งาน
+
 const { photos, addNewToGallery, loadSaved } = usePhotoGallery();
 
 

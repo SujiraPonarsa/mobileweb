@@ -1,0 +1,84 @@
+/* === Header Styling === */
+ion-toolbar[color="primary"] {
+  --background: #3880ff;
+  --color: white;
+}
+
+ion-toolbar[color="light"] {
+  --background: #f8f9fa;
+  --color: #666;
+  --border-width: 0 0 1px 0;
+  --border-style: solid;
+  --border-color: #dee2e6;
+}
+
+ion-title {
+  text-align: center;
+}
+
+ion-title[size="small"] {
+  font-size: 13px !important;
+  font-weight: normal !important;
+  padding: 8px 0;
+}
+
+/* === Empty State Styling === */
+.empty-state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 120px);
+  padding: 20px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 80px;
+  color: #d1d5db;
+  margin-bottom: 20px;
+}
+
+.empty-state-title {
+  color: #374151;
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+}
+
+.empty-state-text {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* === Photo Grid Styling === */
+ion-grid {
+  padding: 16px;
+}
+
+.photo-item {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* === FAB Button - Force visibility === */
+ion-fab {
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  z-index: 9999 !important;
+}
+
+ion-fab-button {
+  --background: #3880ff !important;
+  --color: white !important;
+  --box-shadow: 0 4px 16px rgba(56, 128, 255, 0.4) !important;
+  width: 56px !important;
+  height: 56px !important;
+}

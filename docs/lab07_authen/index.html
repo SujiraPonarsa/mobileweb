@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lab 07 — Authentication</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Sarabun:wght@300;400;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+
+<style>
+
+:root {
+--bg:#080808;
+--surface:#111;
+--border:#222;
+--border-bright:#333;
+--accent:#00ff88;
+--text:#f0f0f0;
+--muted:#555;
+--muted2:#2a2a2a;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+background:var(--bg);
+color:var(--text);
+font-family:'DM Mono',monospace;
+min-height:100vh;
+}
+
+/* topbar */
+
+.topbar{
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 48px;
+height:40px;
+border-bottom:1px solid var(--border);
+font-size:.58rem;
+letter-spacing:.18em;
+color:var(--muted);
+}
+
+.status-dot{
+display:flex;
+align-items:center;
+gap:7px;
+color:var(--accent);
+}
+
+.status-dot::before{
+content:'';
+width:5px;
+height:5px;
+border-radius:50%;
+background:var(--accent);
+box-shadow:0 0 8px var(--accent);
+}
+
+/* hero */
+
+.hero{
+display:grid;
+grid-template-columns:1fr 1fr;
+border-bottom:1px solid var(--border);
+}
+
+.hero-main{
+padding:56px 48px 48px;
+border-right:1px solid var(--border);
+}
+
+.hero-title{
+font-family:'Bebas Neue',sans-serif;
+font-size:clamp(5.5rem,10vw,9.5rem);
+line-height:.86;
+}
+
+.hero-title .outline{
+-webkit-text-stroke:1.5px var(--border-bright);
+color:transparent;
+display:block;
+}
+
+.hero-title .fill{display:block}
+
+.hero-title .green{
+color:var(--accent);
+display:block;
+}
+
+.hero-info{
+padding:56px 48px 48px;
+display:flex;
+flex-direction:column;
+gap:20px;
+}
+
+.info-block{
+border:1px solid var(--border);
+padding:22px 24px;
+}
+
+.student-name{
+font-family:'Bebas Neue',sans-serif;
+font-size:2.6rem;
+}
+
+.student-id-text{
+font-size:.62rem;
+letter-spacing:.14em;
+color:var(--muted);
+margin-top:6px;
+}
+
+/* section */
+
+.section-header{
+display:flex;
+align-items:center;
+padding:0 48px;
+height:44px;
+border-bottom:1px solid var(--border);
+gap:14px;
+}
+
+.sh-label{
+font-size:.58rem;
+letter-spacing:.2em;
+color:var(--muted);
+}
+
+.sh-line{
+flex:1;
+height:1px;
+background:var(--border);
+}
+
+.sh-count{
+font-size:.58rem;
+letter-spacing:.12em;
+color:var(--accent);
+}
+
+/* layout */
+
+.row-featured{
+display:grid;
+grid-template-columns:2fr 1fr;
+border-bottom:1px solid var(--border);
+}
+
+.row-pair{
+display:grid;
+grid-template-columns:1fr 1fr;
+border-bottom:1px solid var(--border);
+}
+
+.screen-card{
+position:relative;
+border-right:1px solid var(--border);
+overflow:hidden;
+}
+
+.screen-card:last-child{
+border-right:none;
+}
+
+.img-wrap{
+background:#111;
+overflow:hidden;
+}
+
+.row-featured .img-wrap{height:480px}
+.row-pair .img-wrap{height:300px}
+
+/* รูปภาพปกติ ไม่ปรับสี */
+
+.img-wrap img{
+width:100%;
+height:100%;
+object-fit:contain;
+display:block;
+transition:transform .5s;
+}
+
+/* hover zoom อย่างเดียว */
+
+.screen-card:hover img{
+transform:scale(1.05);
+}
+
+/* labels */
+
+.corner-tl{
+position:absolute;
+top:0;
+left:0;
+font-size:.6rem;
+letter-spacing:.12em;
+padding:7px 13px;
+background:var(--bg);
+border-right:1px solid var(--border);
+border-bottom:1px solid var(--border);
+color:var(--muted);
+}
+
+.corner-tr{
+position:absolute;
+top:0;
+right:0;
+font-size:.55rem;
+letter-spacing:.14em;
+padding:7px 13px;
+background:var(--bg);
+border-left:1px solid var(--border);
+border-bottom:1px solid var(--border);
+color:var(--muted);
+}
+
+/* card */
+
+.card-foot{
+padding:16px 22px;
+border-top:1px solid var(--border);
+display:flex;
+align-items:center;
+justify-content:space-between;
+}
+
+.card-title{
+font-family:'Bebas Neue',sans-serif;
+font-size:1.2rem;
+}
+
+.card-desc{
+font-family:'Sarabun',sans-serif;
+font-size:.7rem;
+color:var(--muted);
+margin-top:3px;
+}
+
+/* footer */
+
+footer{
+display:grid;
+grid-template-columns:1fr 1fr;
+border-top:1px solid var(--border);
+}
+
+.footer-l{
+padding:22px 48px;
+border-right:1px solid var(--border);
+}
+
+.footer-r{
+padding:22px 48px;
+display:flex;
+align-items:center;
+justify-content:flex-end;
+}
+
+.footer-text{
+font-size:.56rem;
+letter-spacing:.14em;
+color:var(--muted2);
+line-height:2.2;
+}
+
+/* responsive */
+
+@media(max-width:860px){
+
+.hero,
+.row-featured,
+.row-pair{
+grid-template-columns:1fr;
+}
+
+.hero-main{
+border-right:none;
+border-bottom:1px solid var(--border);
+}
+
+.screen-card{
+border-right:none;
+border-bottom:1px solid var(--border);
+}
+
+.row-featured .img-wrap,
+.row-pair .img-wrap{
+height:280px;
+}
+
+footer{
+grid-template-columns:1fr;
+}
+
+.footer-l{
+border-right:none;
+border-bottom:1px solid var(--border);
+}
+
+.footer-r{
+justify-content:flex-start;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+<span class="status-dot">System Online</span>
+<span>KKU · Mobile Web Dev · 2025</span>
+</div>
+
+<header class="hero">
+
+<div class="hero-main">
+
+<h1 class="hero-title">
+<span class="outline">AUTH</span>
+<span class="fill">ENTI</span>
+<span class="green">CATION</span>
+</h1>
+
+</div>
+
+<div class="hero-info">
+
+<div class="info-block">
+<div class="student-name">Sujira Ponarsa</div>
+<div class="student-id-text">663380408-1</div>
+</div>
+
+</div>
+
+</header>
+
+<div class="section-header">
+<span class="sh-label">Screenshots</span>
+<div class="sh-line"></div>
+<span class="sh-count">04 Screens Total</span>
+</div>
+
+<div class="row-featured">
+
+<div class="screen-card">
+<div class="img-wrap">
+<span class="corner-tl">01 / 04</span>
+<span class="corner-tr">Auth Entry</span>
+<img src="Screenshot (415).png">
+</div>
+
+<div class="card-foot">
+<div>
+<div class="card-title">หน้า Login</div>
+<div class="card-desc">กรอก Email และ Password เข้าสู่ระบบ</div>
+</div>
+</div>
+</div>
+
+<div class="screen-card">
+<div class="img-wrap">
+<span class="corner-tl">02 / 04</span>
+<span class="corner-tr">Sign In</span>
+<img src="Screenshot (419).png">
+</div>
+
+<div class="card-foot">
+<div>
+<div class="card-title">Login</div>
+<div class="card-desc">สถานะการเข้าสู่ระบบ</div>
+</div>
+</div>
+</div>
+
+</div>
+
+<div class="row-pair">
+
+<div class="screen-card">
+<div class="img-wrap">
+<span class="corner-tl">03 / 04</span>
+<span class="corner-tr">Mobile View</span>
+<img src="Screenshot_20260301_223247.png">
+</div>
+
+<div class="card-foot">
+<div>
+<div class="card-title">Mobile View</div>
+<div class="card-desc">มุมมองบนมือถือจริง</div>
+</div>
+</div>
+</div>
+
+<div class="screen-card">
+<div class="img-wrap">
+<span class="corner-tl">04 / 04</span>
+<span class="corner-tr">User</span>
+<img src="Screenshot (418).png">
+</div>
+
+<div class="card-foot">
+<div>
+<div class="card-title">หน้า User</div>
+<div class="card-desc">หน้าที่ต้องผ่าน Authentication</div>
+</div>
+</div>
+</div>
+
+</div>
+
+<footer>
+
+<div class="footer-l">
+<div class="footer-text">
+Course — Mobile Web Application Development<br>
+University — Khon Kaen University
+</div>
+</div>
+
+<div class="footer-r">
+<div class="footer-text">
+© 2025 Sujira Ponarsa
+</div>
+</div>
+
+</footer>
+
+</body>
+</html>

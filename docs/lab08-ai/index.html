@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gemini Vision AI</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+/* ===== THEME ===== */
+:root{
+--bg:#fffdf6;
+--card:#ffffff;
+--soft:#fff7cc;
+--border:#f1e4a3;
+--accent:#f4c430;
+--text:#1c1a00;
+--muted:#7a7200;
+--shadow:0 10px 30px rgba(200,170,0,.15);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+/* ===== BODY ===== */
+body{
+font-family:'Inter',sans-serif;
+background:var(--bg);
+color:var(--text);
+}
+
+/* ===== NAV ===== */
+nav{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:18px 40px;
+background:white;
+border-bottom:1px solid var(--border);
+}
+
+.logo{font-weight:700;}
+
+.badge{
+background:var(--soft);
+padding:6px 14px;
+border-radius:999px;
+font-size:.7rem;
+}
+
+/* ===== HERO ===== */
+.hero{
+padding:60px 40px 30px;
+max-width:1100px;
+margin:auto;
+}
+
+.hero h1{
+font-size:3.5rem;
+font-weight:700;
+line-height:1.1;
+}
+
+.hero span{color:var(--accent);}
+
+.hero p{
+margin-top:14px;
+color:var(--muted);
+font-size:.9rem;
+}
+
+/* ===== INFO ===== */
+.info{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:16px;
+padding:0 40px;
+max-width:1100px;
+margin:auto;
+}
+
+.info-card{
+background:var(--card);
+border:1px solid var(--border);
+border-radius:16px;
+padding:18px;
+box-shadow:var(--shadow);
+}
+
+.info-title{
+font-size:.7rem;
+color:var(--muted);
+margin-bottom:6px;
+}
+
+.info-value{font-weight:600;}
+
+/* ===== SECTION ===== */
+.section{
+max-width:1100px;
+margin:40px auto;
+padding:0 40px;
+}
+
+.section-title{
+font-size:.8rem;
+letter-spacing:.1em;
+color:var(--muted);
+margin-bottom:16px;
+}
+
+/* ===== GRID ===== */
+.grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:20px;
+}
+
+/* ===== CARD ===== */
+.card{
+background:var(--card);
+border-radius:18px;
+border:1px solid var(--border);
+overflow:hidden;
+box-shadow:var(--shadow);
+transition:.3s;
+}
+
+.card:hover{transform:translateY(-5px);}
+
+/* ===== IMAGE ===== */
+.img{
+height:260px;
+background:var(--soft);
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.img img{
+width:100%;
+height:100%;
+object-fit:contain;
+}
+
+/* ===== ANDROID FIX ===== */
+.card.android .img{
+height:auto;
+padding:20px;
+background:#fff;
+}
+
+.card.android img{
+width:auto;
+height:auto;
+max-width:100%;
+max-height:500px;
+display:block;
+margin:auto;
+object-fit:unset;
+}
+
+/* ===== CONTENT ===== */
+.content{padding:16px;}
+
+.title{
+font-weight:600;
+margin-bottom:4px;
+}
+
+.desc{
+font-size:.8rem;
+color:var(--muted);
+}
+
+/* ===== FOOTER ===== */
+footer{
+text-align:center;
+padding:40px;
+font-size:.75rem;
+color:var(--muted);
+border-top:1px solid var(--border);
+margin-top:40px;
+}
+
+/* ===== MOBILE ===== */
+@media(max-width:768px){
+.hero h1{font-size:2.2rem}
+.info{grid-template-columns:1fr}
+.grid{grid-template-columns:1fr}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- NAV -->
+
+<nav>
+<div class="logo">Lab08 · Gemini</div>
+<div class="badge">AI Vision Active</div>
+</nav>
+
+<!-- HERO -->
+
+<div class="hero">
+<h1>Gemini <span>Vision AI</span></h1>
+<p>วิเคราะห์ภาพด้วย AI แสดง Caption, Tags และ Objects แบบอัตโนมัติ</p>
+</div>
+
+<!-- INFO -->
+
+<div class="info">
+<div class="info-card">
+<div class="info-title">Developer</div>
+<div class="info-value">Sujira Ponarsa</div>
+</div>
+
+<div class="info-card">
+<div class="info-title">Model</div>
+<div class="info-value">Gemini 2.5 Flash</div>
+</div>
+
+<div class="info-card">
+<div class="info-title">Platform</div>
+<div class="info-value">Web + Android</div>
+</div>
+</div>
+
+<!-- SECTION -->
+
+<div class="section">
+<div class="section-title">SCREEN FLOW</div>
+
+<div class="grid">
+
+<!-- 1 -->
+
+<div class="card">
+<div class="img"><img src="Screenshot (592).png"></div>
+<div class="content">
+<div class="title">01 — Input Image</div>
+</div>
+</div>
+
+<!-- 1 -->
+
+<div class="card">
+<div class="img"><img src="Screenshot (591).png"></div>
+<div class="content">
+<div class="title">ผลการวิเคราะห์ภาพที่ 1</div>
+</div>
+</div>
+
+<!-- 2 -->
+
+<div class="card">
+<div class="img"><img src="Screenshot (593).png"></div>
+<div class="content">
+<div class="title">02 — Input Image</div>
+</div>
+</div>
+
+<!-- 2 -->
+
+<div class="card">
+<div class="img"><img src="Screenshot (594).png"></div>
+<div class="content">
+<div class="title">ผลการวิเคราะห์ภาพที่ 2</div>
+</div>
+</div>
+
+<!-- 3 -->
+
+<div class="card">
+<div class="img"><img src="Screenshot (595).png"></div>
+<div class="content">
+<div class="title">03 — Input Image</div>
+</div>
+</div>
+
+<!-- 3 -->
+
+<div class="card">
+<div class="img"><img src="Screenshot (596).png"></div>
+<div class="content">
+<div class="title">ผลการวิเคราะห์ภาพที่ 3</div>
+</div>
+</div>
+
+<!-- 3 -->
+
+<div class="card">
+<div class="img"><img src="Screenshot (597).png"></div>
+<div class="content">
+<div class="title">04 — Input Image</div>
+</div>
+</div>
+
+<!-- 3 -->
+
+<div class="card">
+<div class="img"><img src="Screenshot (598).png"></div>
+<div class="content">
+<div class="title">ผลการวิเคราะห์ภาพที่ 4</div>
+</div>
+</div>
+<!-- 4 (ANDROID REAL SIZE) -->
+
+<div class="card android">
+<div class="img"><img src="Screenshot_20260328_174533.png"></div>
+<div class="content">
+<div class="title">04 — Android Real Device</div>
+<div class="desc">แสดงผลบนมือถือจริง (ขนาดจริง)</div>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- FOOTER -->
+
+<footer>
+© 2025 Sujira Ponarsa · Khon Kaen University
+</footer>
+
+</body>
+</html>

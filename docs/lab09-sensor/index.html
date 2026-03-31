@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lab09 Sensors</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+--bg:#f4fffb;
+--card:#ffffff;
+--soft:#dffaf3;
+--border:#b6efe2;
+--accent:#00c9a7;
+--accent2:#4facfe;
+--text:#063b35;
+--muted:#5c8f87;
+--shadow:0 10px 25px rgba(0,150,120,.15);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+font-family:'Inter',sans-serif;
+background:var(--bg);
+color:var(--text);
+}
+
+nav{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:18px 40px;
+background:white;
+border-bottom:1px solid var(--border);
+}
+
+.logo{font-weight:700;}
+
+.badge{
+background:var(--soft);
+padding:6px 14px;
+border-radius:999px;
+font-size:.7rem;
+}
+
+.hero{
+padding:60px 40px 20px;
+max-width:900px;
+margin:auto;
+text-align:center;
+}
+
+.hero h1{
+font-size:3rem;
+font-weight:700;
+}
+
+.hero span{
+background:linear-gradient(90deg,var(--accent),var(--accent2));
+-webkit-background-clip:text;
+color:transparent;
+}
+
+.hero p{
+margin-top:10px;
+color:var(--muted);
+font-size:.9rem;
+}
+
+.profile{
+display:flex;
+justify-content:center;
+gap:20px;
+margin-top:20px;
+font-size:.9rem;
+color:var(--muted);
+}
+
+.section{
+max-width:900px;
+margin:40px auto;
+padding:0 20px;
+}
+
+.card{
+background:var(--card);
+border-radius:20px;
+border:1px solid var(--border);
+overflow:hidden;
+box-shadow:var(--shadow);
+transition:.3s;
+}
+
+.card:hover{
+transform:translateY(-5px);
+}
+
+.img{
+height:420px;
+background:var(--soft);
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.img img{
+max-width:100%;
+max-height:100%;
+object-fit:contain;
+}
+
+.content{
+padding:20px;
+text-align:center;
+}
+
+.title{
+font-weight:600;
+margin-bottom:6px;
+}
+
+.desc{
+font-size:.85rem;
+color:var(--muted);
+}
+
+footer{
+text-align:center;
+padding:30px;
+font-size:.75rem;
+color:var(--muted);
+border-top:1px solid var(--border);
+margin-top:40px;
+}
+
+@media(max-width:768px){
+.hero h1{font-size:2rem}
+.img{height:260px}
+}
+</style>
+
+</head>
+
+<body>
+
+<nav>
+<div class="logo">Lab09 · Sensors</div>
+<div class="badge">Ionic + Capacitor</div>
+</nav>
+
+<div class="hero">
+<h1>Arm Workout <span>Application</span></h1>
+<p>แอปกายบริหารแขนโดยใช้ Motion Sensor ตรวจจับการเคลื่อนไหวแบบ Real-time</p>
+
+<div class="profile">
+<div>663380408-1</div>
+<div>นางสาวสุจิรา พลอาษา</div>
+</div>
+</div>
+
+<div class="section">
+<div class="card">
+
+<div class="img">
+<img src="Screenshot (609).png">
+</div>
+
+<div class="content">
+<div class="title">ตัวอย่างหน้าจอบน browser</div>
+<div class="desc">
+</div>
+</div>
+
+</div>
+</div>
+
+<footer>
+© 2026 Sujira Ponarsa · Mobile Web Application Development
+</footer>
+
+</body>
+</html>
